@@ -1,0 +1,21 @@
+{
+  "name": "page-performance",
+  "version": "1.0.0",
+  "description": "Biblioteca que entrega dados de performance da página",
+  "main": "src/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/globocom/page-performance.git"
+  },
+  "keywords": [
+    "performance",
+    "pwa"
+  ],
+  "author": "Backstage <backstage@corp.globo.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/globocom/page-performance/issues"
+  },
+  "homepage": "https://github.com/globocom/page-performance",
+}
