@@ -1,6 +1,38 @@
+const toDate = (timestamp) => {
+  if (!timestamp || timestamp <= 0) {
+    return 0;
+  }
+
+  const date = new Date(timestamp);
+
+  return `${date.toLocaleDateString('pt-BR')} - ${date.toLocaleTimeString('pt-BR')}`;
+};
+
+const toTime = (timestamp) => {
+  if (timestamp === 0) {
+    return timestamp;
+  }
+
+  if (timestamp > 1000) {
+    return `${(timestamp / 1000).toFixed(2)}s`;
+  }
+
+  return `${Math.round(timestamp).toFixed(2)}ms`;
+};
+
 export default class PagePerformance {
   constructor() {
+    this.connectionInfo = {
+      downlink: null,
+      effectiveType: null,
+      roundtripTime: null,
+      type: null,
+    };
     this.navigation = window.performance.navigation;
+    this.sw = {
+      activated: false,
+      scriptUrl: null,
+    };
     this.timing = window.performance.timing;
   }
 
@@ -13,18 +45,17 @@ export default class PagePerformance {
   }
 
   connectionInfo(raw) {
-    let info = {};
-
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const connection = navigator.connection ||
+      navigator.mozConnection || navigator.webkitConnection;
 
     if (connection) {
-      info["downlink"] = connection.downlink || 'Desconhecido';
-      info["effectiveType"] = connection.effectiveType || 'Desconhecido';
-      info["RoundtripTime"] = (raw ? connection.rtt : this.toTime(connection.rtt)) || 'Desconhecido';
-      info["type"] = connection.type || 'Desconhecido';
+      this.connectionInfo.downlink = connection.downlink || 'Desconhecido';
+      this.connectionInfo.effectiveType = connection.effectiveType || 'Desconhecido';
+      this.connectionInfo.roundtripTime = (raw ? connection.rtt : toTime(connection.rtt)) || 'Desconhecido';
+      this.connectionInfo.type = connection.type || 'Desconhecido';
     }
 
-    return info;
+    return this.connectionInfo;
   }
 
   dnsTime() {
@@ -32,14 +63,14 @@ export default class PagePerformance {
   }
 
   navigationType() {
-    const type = this.navigation.type;
+    const { type } = this.navigation;
     const types = {
       0: 'Interação do usuário',
       1: 'Recarregamento da página',
-      2: 'Movimentação pelo histórico (voltar ou avançar)'
+      2: 'Movimentação pelo histórico (voltar ou avançar)',
     };
 
-    if (type && types.hasOwnProperty(type)) {
+    if (type && Object.prototype.hasOwnProperty.call(types, type)) {
       return types[type];
     }
 
@@ -55,13 +86,13 @@ export default class PagePerformance {
   }
 
   paintTime(raw) {
-    let times = {};
+    const times = {};
 
-    window.performance.getEntriesByType('paint').forEach(performanceEntry => {
+    window.performance.getEntriesByType('paint').forEach((performanceEntry) => {
       const time = this.timing.navigationStart + performanceEntry.startTime;
 
       times[performanceEntry.name] = {
-        "when": raw ? time : this.toDate(time),
+        when: raw ? time : toDate(time),
       };
     });
 
@@ -89,43 +120,16 @@ export default class PagePerformance {
   }
 
   serviceWorkerInfo() {
-    let sw = {
-      "activated": false,
-      "scriptUrl": null
-    };
-
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      sw["activated"] = navigator.serviceWorker.controller.state === 'activated' ? true : false;
-      sw["scriptUrl"] = navigator.serviceWorker.controller.scriptUrl;
+      this.sw.activated = navigator.serviceWorker.controller.state === 'activated';
+      this.sw.scriptUrl = navigator.serviceWorker.controller.scriptUrl;
     }
 
-    return sw;
+    return this.sw;
   }
 
   tcpTime() {
     return this.timing.connectEnd - this.timing.connectStart;
-  }
-
-  toDate(timestamp) {
-    if (!timestamp || timestamp <= 0) {
-      return 0;
-    }
-
-    const date = new Date(timestamp);
-
-    return `${date.toLocaleDateString('pt-BR')} - ${date.toLocaleTimeString('pt-BR')}`;
-  }
-
-  toTime(timestamp) {
-    if (timestamp === 0) {
-      return timestamp;
-    }
-
-    if (timestamp > 1000) {
-      return `${(timestamp / 1000).toFixed(2)}s`;
-    }
-
-    return `${Math.round(timestamp).toFixed(2)}ms`;
   }
 
   totalTime() {
@@ -133,150 +137,154 @@ export default class PagePerformance {
   }
 
   toJSON() {
-    return {
-      "AppCache": {
-        "start": this.toDate(this.timing.fetchStart),
-        "end": this.toDate(this.timing.domainLookupStart),
-        "duration": this.toTime(this.appCacheTime())
+    const result = {
+      AppCache: {
+        start: toDate(this.timing.fetchStart),
+        end: toDate(this.timing.domainLookupStart),
+        duration: toTime(this.appCacheTime()),
       },
-      "Browser": {
-        "start": this.toDate(this.timing.responseEnd),
-        "end": this.toDate(this.timing.loadEventEnd),
-        "duration": this.toTime(this.browserTime())
+      Browser: {
+        start: toDate(this.timing.responseEnd),
+        end: toDate(this.timing.loadEventEnd),
+        duration: toTime(this.browserTime()),
       },
-      "Connection": this.connectionInfo(false),
-      "DNS": {
-        "start": this.toDate(this.timing.domainLookupStart),
-        "end": this.toDate(this.timing.domainLookupEnd),
-        "duration": this.toTime(this.dnsTime())
+      Connection: this.connectionInfo(false),
+      DNS: {
+        start: toDate(this.timing.domainLookupStart),
+        end: toDate(this.timing.domainLookupEnd),
+        duration: toTime(this.dnsTime()),
       },
-      "NavigationType": this.navigationType(),
-      "Navigator": {
-        "appCodeName": navigator.appCodeName,
-        "appName": navigator.appName,
-        "appVersion": navigator.appVersion,
-        "cookieEnabled": navigator.cookieEnabled,
-        "language": navigator.language,
-        "platform": navigator.platform,
-        "product": navigator.product,
-        "productSub": navigator.productSub,
-        "userAgent": navigator.userAgent,
-        "vendor": navigator.vendor
+      NavigationType: this.navigationType(),
+      Navigator: {
+        appCodeName: navigator.appCodeName,
+        appName: navigator.appName,
+        appVersion: navigator.appVersion,
+        cookieEnabled: navigator.cookieEnabled,
+        language: navigator.language,
+        platform: navigator.platform,
+        product: navigator.product,
+        productSub: navigator.productSub,
+        userAgent: navigator.userAgent,
+        vendor: navigator.vendor,
       },
-      "OnLoad": {
-        "start": this.toDate(this.timing.loadEventStart),
-        "end": this.toDate(this.timing.loadEventEnd),
-        "duration": this.toTime(this.onLoadTime())
+      OnLoad: {
+        start: toDate(this.timing.loadEventStart),
+        end: toDate(this.timing.loadEventEnd),
+        duration: toTime(this.onLoadTime()),
       },
-      "Paint": this.paintTime(false),
-      "Processing": {
-        "start": this.toDate(this.timing.domLoading),
-        "end": this.toDate(this.timing.loadEventStart),
-        "duration": this.toTime(this.processingTime())
+      Paint: this.paintTime(false),
+      Processing: {
+        start: toDate(this.timing.domLoading),
+        end: toDate(this.timing.loadEventStart),
+        duration: toTime(this.processingTime()),
       },
-      "Redirect": {
-        "start": this.toDate(this.timing.redirectStart),
-        "end": this.toDate(this.timing.redirectEnd),
-        "duration": this.toTime(this.redirectTime()),
-        "count": this.redirectCount()
+      Redirect: {
+        start: toDate(this.timing.redirectStart),
+        end: toDate(this.timing.redirectEnd),
+        duration: toTime(this.redirectTime()),
+        count: this.redirectCount(),
       },
-      "Request": {
-        "start": this.toDate(this.timing.requestStart),
-        "end": this.toDate(this.timing.responseStart),
-        "duration": this.toTime(this.requestTime())
+      Request: {
+        start: toDate(this.timing.requestStart),
+        end: toDate(this.timing.responseStart),
+        duration: toTime(this.requestTime()),
       },
-      "Response": {
-        "start": this.toDate(this.timing.responseStart),
-        "end": this.toDate(this.timing.responseEnd),
-        "duration": this.toTime(this.responseTime())
+      Response: {
+        start: toDate(this.timing.responseStart),
+        end: toDate(this.timing.responseEnd),
+        duration: toTime(this.responseTime()),
       },
-      "ServiceWorker": this.serviceWorkerInfo(),
-      "TCP": {
-        "start": this.toDate(this.timing.connectStart),
-        "startSSL": this.toDate(this.timing.secureConnectionStart),
-        "end": this.toDate(this.timing.connectEnd),
-        "duration": this.toTime(this.tcpTime())
+      ServiceWorker: this.serviceWorkerInfo(),
+      TCP: {
+        start: toDate(this.timing.connectStart),
+        startSSL: toDate(this.timing.secureConnectionStart),
+        end: toDate(this.timing.connectEnd),
+        duration: toTime(this.tcpTime()),
       },
-      "Total": {
-        "start": this.toDate(this.timing.navigationStart),
-        "end": this.toDate(this.timing.loadEventEnd),
-        "duration": this.toTime(this.totalTime()),
-        "networkLatency": this.toTime(this.networkLatency())
-      }
-    }
+      Total: {
+        start: toDate(this.timing.navigationStart),
+        end: toDate(this.timing.loadEventEnd),
+        duration: toTime(this.totalTime()),
+        networkLatency: toTime(this.networkLatency()),
+      },
+    };
+
+    return JSON.parse(result);
   }
 
   toJSONRaw() {
-    return {
-      "AppCache": {
-        "start": this.timing.fetchStart,
-        "end": this.timing.domainLookupStart,
-        "duration": this.appCacheTime()
+    const result = {
+      AppCache: {
+        start: this.timing.fetchStart,
+        end: this.timing.domainLookupStart,
+        duration: this.appCacheTime(),
       },
-      "Browser": {
-        "start": this.timing.responseEnd,
-        "end": this.timing.loadEventEnd,
-        "duration": this.browserTime()
+      Browser: {
+        start: this.timing.responseEnd,
+        end: this.timing.loadEventEnd,
+        duration: this.browserTime(),
       },
-      "Connection": this.connectionInfo(true),
-      "DNS": {
-        "start": this.timing.domainLookupStart,
-        "end": this.timing.domainLookupEnd,
-        "duration": this.dnsTime()
+      Connection: this.connectionInfo(true),
+      DNS: {
+        start: this.timing.domainLookupStart,
+        end: this.timing.domainLookupEnd,
+        duration: this.dnsTime(),
       },
-      "NavigationType": this.navigationType(),
-      "Navigator": {
-        "appCodeName": navigator.appCodeName,
-        "appName": navigator.appName,
-        "appVersion": navigator.appVersion,
-        "cookieEnabled": navigator.cookieEnabled,
-        "language": navigator.language,
-        "platform": navigator.platform,
-        "product": navigator.product,
-        "productSub": navigator.productSub,
-        "userAgent": navigator.userAgent,
-        "vendor": navigator.vendor
+      NavigationType: this.navigationType(),
+      Navigator: {
+        appCodeName: navigator.appCodeName,
+        appName: navigator.appName,
+        appVersion: navigator.appVersion,
+        cookieEnabled: navigator.cookieEnabled,
+        language: navigator.language,
+        platform: navigator.platform,
+        product: navigator.product,
+        productSub: navigator.productSub,
+        userAgent: navigator.userAgent,
+        vendor: navigator.vendor,
       },
-      "OnLoad": {
-        "start": this.timing.loadEventStart,
-        "end": this.timing.loadEventEnd,
-        "duration": this.onLoadTime()
+      OnLoad: {
+        start: this.timing.loadEventStart,
+        end: this.timing.loadEventEnd,
+        duration: this.onLoadTime(),
       },
-      "Paint": this.paintTime(true),
-      "Processing": {
-        "start": this.timing.domLoading,
-        "end": this.timing.loadEventStart,
-        "duration": this.processingTime()
+      Paint: this.paintTime(true),
+      Processing: {
+        start: this.timing.domLoading,
+        end: this.timing.loadEventStart,
+        duration: this.processingTime(),
       },
-      "Redirect": {
-        "start": this.timing.redirectStart,
-        "end": this.timing.redirectEnd,
-        "duration": this.redirectTime(),
-        "count": this.redirectCount()
+      Redirect: {
+        start: this.timing.redirectStart,
+        end: this.timing.redirectEnd,
+        duration: this.redirectTime(),
+        count: this.redirectCount(),
       },
-      "Request": {
-        "start": this.timing.requestStart,
-        "end": this.timing.responseStart,
-        "duration": this.requestTime()
+      Request: {
+        start: this.timing.requestStart,
+        end: this.timing.responseStart,
+        duration: this.requestTime(),
       },
-      "Response": {
-        "start": this.timing.responseStart,
-        "end": this.timing.responseEnd,
-        "duration": this.responseTime()
+      Response: {
+        start: this.timing.responseStart,
+        end: this.timing.responseEnd,
+        duration: this.responseTime(),
       },
-      "ServiceWorker": this.serviceWorkerInfo(),
-      "TCP": {
-        "start": this.timing.connectStart,
-        "startSSL": this.timing.secureConnectionStart,
-        "end": this.timing.connectEnd,
-        "duration": this.tcpTime()
+      ServiceWorker: this.serviceWorkerInfo(),
+      TCP: {
+        start: this.timing.connectStart,
+        startSSL: this.timing.secureConnectionStart,
+        end: this.timing.connectEnd,
+        duration: this.tcpTime(),
       },
-      "Total": {
-        "start": this.timing.navigationStart,
-        "end": this.timing.loadEventEnd,
-        "duration": this.totalTime(),
-        "networkLatency": this.networkLatency()
-      }
-    }
+      Total: {
+        start: this.timing.navigationStart,
+        end: this.timing.loadEventEnd,
+        duration: this.totalTime(),
+        networkLatency: this.networkLatency(),
+      },
+    };
+
+    return JSON.parse(result);
   }
 }
