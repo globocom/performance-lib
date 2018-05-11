@@ -22,7 +22,7 @@ const toTime = (timestamp) => {
 
 export default class PagePerformance {
   constructor() {
-    this.connectionInfo = {
+    this.connection = {
       downlink: null,
       effectiveType: null,
       roundtripTime: null,
@@ -49,13 +49,13 @@ export default class PagePerformance {
       navigator.mozConnection || navigator.webkitConnection;
 
     if (connection) {
-      this.connectionInfo.downlink = connection.downlink || 'Desconhecido';
-      this.connectionInfo.effectiveType = connection.effectiveType || 'Desconhecido';
-      this.connectionInfo.roundtripTime = (raw ? connection.rtt : toTime(connection.rtt)) || 'Desconhecido';
-      this.connectionInfo.type = connection.type || 'Desconhecido';
+      this.connection.downlink = connection.downlink || 'Desconhecido';
+      this.connection.effectiveType = connection.effectiveType || 'Desconhecido';
+      this.connection.roundtripTime = (raw ? connection.rtt : toTime(connection.rtt)) || 'Desconhecido';
+      this.connection.type = connection.type || 'Desconhecido';
     }
 
-    return this.connectionInfo;
+    return this.connection;
   }
 
   dnsTime() {
@@ -137,7 +137,7 @@ export default class PagePerformance {
   }
 
   toJSON() {
-    const result = {
+    return {
       AppCache: {
         start: toDate(this.timing.fetchStart),
         end: toDate(this.timing.domainLookupStart),
@@ -208,12 +208,10 @@ export default class PagePerformance {
         networkLatency: toTime(this.networkLatency()),
       },
     };
-
-    return JSON.parse(result);
   }
 
   toJSONRaw() {
-    const result = {
+    return {
       AppCache: {
         start: this.timing.fetchStart,
         end: this.timing.domainLookupStart,
@@ -284,7 +282,5 @@ export default class PagePerformance {
         networkLatency: this.networkLatency(),
       },
     };
-
-    return JSON.parse(result);
   }
 }
