@@ -1,4 +1,4 @@
-# Performance Lib
+# Performance Lib [![Build Status](https://travis-ci.org/globocom/performance-lib.svg?branch=master)](https://travis-ci.org/globocom/performance-lib)
 
 Esta biblioteca entrega um conjunto de dados de performance da página que foi carregada.
 
