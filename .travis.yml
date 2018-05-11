@@ -1,0 +1,12 @@
+language: node_js
+sudo: false
+cache:
+  directories:
+    - node_modules
+node_js:
+  - "9.8.0"
+notifications:
+  email:
+    - backstage7@corp.globo.com
+  slack:
+    secure: YNcOBZ6YZ/C2FomZzUAepqeTRtgAJSxbwArfsCRYpfZBH4A1TOwSluD7WxGXvPpISPke8DAbwRHnEA+/XIKAFSU0mJPksVe/QbNTgeEEk7a1fUhfR8MTt/nbfhKLDzD9UtvcOm2RiwsCpGVvZ4Aoc8OZ5xN/32clgZO/BenM6M6wjLo7I/xJWVTqBPfkwfQty8c7IrdgA6IeefdID0GjXP8AG/IWf5moBgzNEXi12gj9CMXfs90ibm5k2ik+AVLjRTYyFL7hR0AmuJOF31VnCpskhsqCQSb+7JA8FaWSHQYgxZp5HsCTfwKE/WndmHI7NAO0aeDP6cXeyE1IWLDPYVZoAAKbSD+PerFG4yIjlXIyx56YFJH2xaivNI0NRqCzRpdvX3XUAmw4fS1rkQHQDmVR5ZNI+FkF/fHT9jyT1Rp88OfaEQL1d2klL3ixBibRMgX/l/7aTqTVjCH2v+I8nH2TxOj/BQF0Uw3jE+Et+wGn34HYa9hmNuIdPkhJK3DX2BgkD3kE6XVFnD82eominsU+dFg1LZnrjkfVDC4hxrVBIyOvBZjwMZ9vZJrlOjNUPobCiqAbYuonzRniVVdLDf4A2gTQWdYQqPsvfPuRF7O5SHQPZQXi0s6TShhjmj9NSKzob0pdDlGbPU5ntNbg/o6FBXhqoMynWjuAolX4yKw=
