@@ -5,6 +5,8 @@ cache:
     - node_modules
 node_js:
   - "9.8.0"
+before_install:
+  - export TZ=America/Sao_Paulo
 notifications:
   email:
     - backstage7@corp.globo.com
