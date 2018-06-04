@@ -89,7 +89,7 @@ export default class PagePerformance {
     const times = {};
 
     window.performance.getEntriesByType('paint').forEach((performanceEntry) => {
-      const time = performanceEntry.startTime;
+      const time = this.timing.navigationStart + performanceEntry.startTime;
 
       times[performanceEntry.name] = {
         when: raw ? time : toDate(time),
