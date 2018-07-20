@@ -1,3 +1,5 @@
+const isNumeric = v => !isNaN(parseFloat(v)) && isFinite(v)
+
 const toDate = (timestamp) => {
   if (!timestamp || timestamp <= 0) {
     return 0;
@@ -51,7 +53,7 @@ export default class PagePerformance {
     if (connection) {
       this.connection.downlink = connection.downlink || 'Desconhecido';
       this.connection.effectiveType = connection.effectiveType || 'Desconhecido';
-      this.connection.roundtripTime = (raw ? connection.rtt : toTime(connection.rtt)) || 'Desconhecido';
+      this.connection.roundtripTime = isNumeric(connection.rtt) ? (raw ? connection.rtt : toTime(connection.rtt)) : 'Desconhecido';
       this.connection.type = connection.type || 'Desconhecido';
     }
 

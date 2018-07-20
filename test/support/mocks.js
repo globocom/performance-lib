@@ -11,7 +11,7 @@ const navigator = {
   connection: {
     downlink: 10,
     effectiveType: '4g',
-    rtt: 100,
+    rtt: 0,
   },
   product: 'Gecko',
   serviceWorker: {
@@ -48,7 +48,7 @@ const timing = {
 
 const window = {
   performance: {
-    getEntriesByType: (name) => {
+    getEntriesByType: name => {
       const data = {
         paint: [
           { name: 'first-contentful-paint', startTime: 110 },
