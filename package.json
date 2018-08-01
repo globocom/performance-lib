@@ -1,6 +1,6 @@
 {
   "name": "page-performance",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Biblioteca que entrega dados de performance da página",
   "main": "src/index.js",
   "scripts": {
